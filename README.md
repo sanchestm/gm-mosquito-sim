@@ -3,4 +3,4 @@
 
 
 
-![screenshot of the program](https://github.com/sanchestm/gm-mosquito-sim/tree/master/screenshot/screenshots_tutorial.png)
+![screenshot of the program](https://github.com/sanchestm/gm-mosquito-sim/blob/master/screenshots/screenshots_tutorial.png)
