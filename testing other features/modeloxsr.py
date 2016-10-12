@@ -2,6 +2,8 @@ import matplotlib
 from numpy import *
 from random import *
 from matplotlib.pyplot import *
+style.use('ggplot')
+encoding: utf-8
 
 n = 1200
 px = 0.749
@@ -9,14 +11,14 @@ pxsr = 0.01
 ngen = 60
 razaoxsr = .75
 
-#-------------------------------------------------functions----------------------------------------------------------------		
+#-------------------------------------------------functions----------------------------------------------------------------
 def seleciona(px, pxsr):
     a = random()
     if a<px : return 'x'
     if a < px + pxsr: return 'xsr'
     else: return 'y'
 
-def calcula(m_lista, f_lista): 
+def calcula(m_lista, f_lista):
     nx = 0.
     ny = 0.
     nxsr = 0.
@@ -45,27 +47,27 @@ def next_gen(n, m_lista, f_lista):
 	f_new = []
 	for i in range(n):
 		sexo = 0
-		m_sample = randint(0, size(m_lista)/2-1)
+		m_sample = randint(0, int(size(m_lista)/2-1))
 		if m_lista[m_sample][0] == 'xsr' or m_lista[m_sample][1] == 'xsr':
 			if random() < chanceXSR: a = 'xsr'
 			else: a = 'y'; sexo = 1
 		else:
 			if random() < .5: a = 'x'
 			else: a = 'y'; sexo = 1
-		
-		f_sample = randint(0, size(f_lista)/2-1)
+
+		f_sample = randint(0, int(size(f_lista)/2-1))
 		if f_lista[f_sample][0] ==  f_lista[f_sample][1]:
-			b = f_lista[f_sample][1] 
+			b = f_lista[f_sample][1]
 		else:
 			if random() < chanceXSR: b = 'xsr'
 			else: b = 'x'
 		if sexo == 1: m_new += [(a,b)]
-		else: f_new += [(a,b)] 
+		else: f_new += [(a,b)]
 	return (m_new, f_new)
 
 
-#-------------------------------------------------functions----------------------------------------------------------------			
-			
+#-------------------------------------------------functions----------------------------------------------------------------
+
 macho = []
 femea = []
 
@@ -103,17 +105,18 @@ for i in range(ngen):
     fsize_list += [b[4]]
     geracoes_list += [geracoes_list[-1]+1]
 
-plot(geracoes_list , px_list,  label= "frequencia X")
-plot(geracoes_list , pxsr_list,  label= "frequencia Xsr")
-plot(geracoes_list ,py_list,  label= "frequencia Y")
-plot(geracoes_list , [x/n for x in msize_list], label= "frequencia macho", linestyle='--')
-plot(geracoes_list , [x/n for x in fsize_list], label= "frequencia femea", linestyle='--')
+plot(geracoes_list , px_list,  label= "X")
+plot(geracoes_list , pxsr_list,  label= " Xsr")
+plot(geracoes_list ,py_list,  label= "Y")
+plot(geracoes_list , [x/n for x in msize_list], label= "male", linestyle='--')
+plot(geracoes_list , [x/n for x in fsize_list], label= "female", linestyle='--')
 
-title('Proporcao alelica pelo tempo | N = '+ str(n) + '; PXsr = '+ str(pxsr)+ '; razaoXSR = '+ str(razaoxsr))
-ylabel('proporcao alelica')
+#title('Proporcao alelica pelo tempo | N = '+ str(n) + '; PXsr = '+ str(pxsr)+ '; razaoXSR = '+ str(razaoxsr))
+title("Surge of mutations that inhibit sex-drive")
+ylabel('Alelic proportion')
 ylim(0,1)
 xlim(1, geracoes_list[-1])
-xlabel('numero de geracoes')
-legend(loc='best', prop={'size':10})
+xlabel('Generations')
+legend(loc='best', prop={'size':8})
 grid(True)
 show()

@@ -8,37 +8,16 @@ from scipy import misc
 from PIL import Image
 import PIL.ImageOps
 
-#######################################################################
-island_shape = misc.imread('ilha_em_preto_250x225.png')
-island_shape_gray = rgb2gray(island_shape)
-
-island_wet = misc.imread('wetness_index_250x225.png')
-island_wet = rgb2gray(island_wet)
-island_wet = ski.img_as_float(island_wet)
-island_veg = misc.imread("vegetation_index-grayscale_250x225.png")
-island_veg = rgb2gray(island_veg)
-island_city = misc.imread('cidade250x225.png')
-island_city = rgb2gray(island_city)
-
-#######################################################################
-
-grid_size = island_shape_gray.shape
-
-#inverse image
-
-inverse_map = abs(island_shape_gray - np.ones(grid_size))
-island_size = island_shape_gray.size*inverse_map.mean()*box*box #lenth n' width in km -> use float
-
-
 
 #######################################################################
 
 class Cell:
-    def __init__(self, pop_list, veg_type, veg_value, hum_value): #pop_list is array, veg_type is string, veg_value is the vegetation index value, hum_value is the humidity value
+    def __init__(self, pop_list, veg_type, veg_value, hum_value, iswater): #pop_list is array, veg_type is string, veg_value is the vegetation index value, hum_value is the humidity value
         self.pop_list  = pop_list
         self.veg_type  = veg_type
         self.veg_value = veg_value
         self.hum_value = hum_value
+        self.iswater = iswater
 
         self.e = pop_list[0]  # e  = eggs    - aquatic steps
         self.l = pop_list[1]  # l  = larvae  - aquatic steps
@@ -97,12 +76,70 @@ class Cell:
         self.n_adult   = sum(self.pop_list[3:])
 
 
+class Grid:
+    def __init__(self, basearray, contour, vegimage, twiimage, cityimage, pixelXmeters):
+        self.shape = contour.shape
+        self.contour = contour
+        self.vegimage = vegimage
+        self.twiimage = twiimage
+        self.cityimage = cityimage
+        self.pixelSize = pixelXmeters
+
+        #initializing grid of Cells
+        self.GRID = [[Cell(np.array(basearray), cityimage[i][j], vegimage[i][j], twiimage[i][j], contour[i][j]) for i in range(self.shape[0])] for j in range(self.shape[1])]
+        global grdsum
+        def grdsum(ending):
+            result = 0
+            for i in range(self.shape[1]):
+                for j in range(self.shape[0]):
+                    result +=eval("self.GRID["+str(i)+"]["+str(j)+"]."+ ending)
+            return result
+
+        self.egrid = grdsum( 'e')  # e  = eggs    - aquatic steps
+        self.lgrid = grdsum( 'l')  # l  = larvae  - aquatic steps
+        self.pgrid = grdsum( 'p')  # p  = pupae   - aquatic steps
+
+        self.ahgrid = grdsum('ah') # ah = host-seeking        adult - adult steps
+        self.argrid = grdsum('ar') # ar = resting             adult - adult steps
+        self.aogrid = grdsum('ao') # ao = ovoposition-seeking adult - adult steps
+
+        self.n_aquaticgrid = self.egrid + self.lgrid + self.pgrid
+        self.n_adultgrid   = self.ahgrid + self.argrid + self.aogrid
+        self.n_totalgrid   = self.n_aquaticgrid + self.n_adultgrid
+
+    def update(self):
+        [[newGrid.GRID[i][j].update() for i in range(newGrid.shape[1])] for j in range(newGrid.shape[0])]
+        self.egrid = grdsum( 'e')  # e  = eggs    - aquatic steps
+        self.lgrid = grdsum( 'l')  # l  = larvae  - aquatic steps
+        self.pgrid = grdsum( 'p')  # p  = pupae   - aquatic steps
+
+        self.ahgrid = grdsum('ah') # ah = host-seeking        adult - adult steps
+        self.argrid = grdsum('ar') # ar = resting             adult - adult steps
+        self.aogrid = grdsum('ao') # ao = ovoposition-seeking adult - adult steps
+
+        self.n_aquaticgrid = self.egrid + self.lgrid + self.pgrid
+        self.n_adultgrid   = self.ahgrid + self.argrid + self.aogrid
+        self.n_totalgrid   = self.n_aquaticgrid + self.n_adultgrid
 
 
 
 
 
-teste = Cell(np.array([1,2,3,4,5,6]), "city", 1,1)
+
+
+island_shape = misc.imread("../example_images/region_border_example.png")
+island_shape_gray = rgb2gray(island_shape)
+island_wet = ski.img_as_float(rgb2gray(misc.imread("../example_images/TWI_example.png")))
+island_veg = adjust_gamma(ski.img_as_float(rgb2gray(misc.imread("../example_images/vegetation_index_example.png"))), .2)
+island_city = rgb2gray(misc.imread("../example_images/city_delimitation_example.png"))
+
+
+
+
+
+
+
+teste = Cell(np.array([1,2,3,4,5,6]), "city", 1,1, 1)
 teste.e
 teste.l
 teste.p
@@ -121,10 +158,3 @@ while 0.95*novo <= antigo <= 1.05*novo :
     teste.update()
     novo = teste.n_total
     a += 1
-
-
-class Grid(width, height, pixelXmeters):
-
-
-    for i in range(width):
-        for range
